@@ -28,7 +28,9 @@ TSGForOIFromL2::TSGForOIFromL2(const edm::ParameterSet & iConfig) :
   minEtaForTEC_(iConfig.getParameter<double>("minEtaForTEC")),
   maxEtaForTOB_(iConfig.getParameter<double>("maxEtaForTOB")),
   useHitLessSeeds_(iConfig.getParameter<bool>("UseHitLessSeeds")),
-  updator_(new KFUpdator()), measurementTrackerTag_(consumes<MeasurementTrackerEvent>(iConfig.getParameter<edm::InputTag>("MeasurementTrackerEvent"))),
+  updator_(new KFUpdator()),
+  measurementTrackerTag_(consumes<MeasurementTrackerEvent>(iConfig.getParameter<edm::InputTag>("MeasurementTrackerEvent"))),
+  //measurementTrackerTag_(consumes<edmNew::DetSetVector<Phase2TrackerCluster1D>>(iConfig.getParameter<edm::InputTag>("MeasurementTrackerEvent"))),
   pT1_(iConfig.getParameter<double>("pT1")),
   pT2_(iConfig.getParameter<double>("pT2")),
   pT3_(iConfig.getParameter<double>("pT3")),
@@ -88,6 +90,9 @@ void TSGForOIFromL2::produce(edm::StreamID sid, edm::Event& iEvent, const edm::E
   iSetup.get<TrackerDigiGeometryRecord>().get(tmpTkGeometryH);
   iSetup.get<TrackingComponentsRecord>().get(estimatorName_,estimatorH);
   iEvent.getByToken(measurementTrackerTag_, measurementTrackerH);
+  
+  //edm::Handle<edmNew::DetSetVector<Phase2TrackerCluster1D>> measurementTrackerH;
+  //iEvent.getByToken(measurementTrackerTag_, measurementTrackerH);
 
   // Read L2 track collection
   edm::Handle<reco::TrackCollection> l2TrackCol;
@@ -423,7 +428,8 @@ void TSGForOIFromL2::fillDescriptions(edm::ConfigurationDescriptions& descriptio
   desc.add<int>("hitsToTry",1);
   desc.add<bool>("adjustErrorsDynamicallyForHits",false);
   desc.add<bool>("adjustErrorsDynamicallyForHitless",true);
-  desc.add<edm::InputTag>("MeasurementTrackerEvent",edm::InputTag("hltSiStripClusters"));
+  //desc.add<edm::InputTag>("MeasurementTrackerEvent",edm::InputTag("hltSiStripClusters"));
+  desc.add<edm::InputTag>("MeasurementTrackerEvent",edm::InputTag("siPhase2Clusters"));
   desc.add<bool>("UseHitLessSeeds",true);
   desc.add<std::string>("estimator","hltESPChi2MeasurementEstimator100");
   desc.add<double>("maxEtaForTOB",1.8);

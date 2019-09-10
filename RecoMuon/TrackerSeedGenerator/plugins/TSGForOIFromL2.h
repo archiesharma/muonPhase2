@@ -31,6 +31,13 @@
 #include "TrackingTools/GeomPropagators/interface/StateOnTrackerBound.h"
 #include "DataFormats/TrackerCommon/interface/TrackerTopology.h"
 
+#include "DataFormats/Phase2TrackerCluster/interface/Phase2TrackerCluster1D.h"
+#include "DataFormats/Common/interface/DetSetVectorNew.h"
+#include "DataFormats/Provenance/interface/ProductID.h"
+#include "DataFormats/Common/interface/ContainerMask.h"
+#include "TrackingTools/PatternTools/interface/TrackCollectionTokens.h"
+#include "RecoTracker/TransientTrackingRecHit/interface/Traj2TrackHits.h"
+
 class TSGForOIFromL2 : public edm::global::EDProducer<> {
  
   public:
@@ -89,6 +96,7 @@ class TSGForOIFromL2 : public edm::global::EDProducer<> {
     const std::unique_ptr<TrajectoryStateUpdator> updator_;
 
     const edm::EDGetTokenT<MeasurementTrackerEvent> measurementTrackerTag_;
+    //const edm::EDGetTokenT<edmNew::DetSetVector<Phase2TrackerCluster1D>> measurementTrackerTag_;
 
     /// pT, eta ranges and scale factor values
     const double pT1_,pT2_,pT3_;

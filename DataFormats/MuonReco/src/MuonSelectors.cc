@@ -295,7 +295,10 @@ bool muon::isGoodMuon( const reco::Muon& muon,
 			 AlgorithmType type,
 			 double minCompatibility,
 			 reco::Muon::ArbitrationType arbitrationType ) {
-  if (!muon.isMatchesValid()) return false;
+
+ 
+ 
+ if (!muon.isMatchesValid()) return false;
   bool goodMuon = false;
   
   switch( type ) {
@@ -326,10 +329,14 @@ bool muon::isGoodMuon( const reco::Muon& muon,
              bool   syncMinNMatchesNRequiredStationsInBarrelOnly,
              bool   applyAlsoAngularCuts)
 {
+
+
    if (!muon.isMatchesValid()) return false;
    bool goodMuon = false;
 
+
    if (type == TMLastStation) {
+
       // To satisfy my own paranoia, if the user specifies that the
       // minimum number of matches is zero, then return true.
       if(minNumberOfMatches == 0) return true;
@@ -648,8 +655,11 @@ bool muon::isGoodMuon( const reco::Muon& muon,
 bool muon::isGoodMuon( const reco::Muon& muon, SelectionType type,
 		       reco::Muon::ArbitrationType arbitrationType)
 {
+
+   std::cout << "checking good muon !!!!" << std::endl;
   switch (type)
     {
+   
     case muon::All:
       return true;
       break;
@@ -692,6 +702,7 @@ bool muon::isGoodMuon( const reco::Muon& muon, SelectionType type,
       break;
     case muon::TMOneStationTight:
       return muon.isTrackerMuon() && isGoodMuon(muon,TMOneStation,1,3,3,3,3,1E9,1E9,arbitrationType,false,false);
+      //return muon.isTrackerMuon();
       break;
     case muon::TMLastStationOptimizedLowPtLoose:
       if (muon.pt() < 8. && fabs(muon.eta()) < 1.2)
@@ -767,6 +778,8 @@ bool muon::isGoodMuon( const reco::Muon& muon, SelectionType type,
     default:
       return false;
     }
+  
+
 }
 
 bool muon::overlap( const reco::Muon& muon1, const reco::Muon& muon2, 
@@ -839,10 +852,17 @@ bool muon::overlap( const reco::Muon& muon1, const reco::Muon& muon2,
 
 
 bool muon::isLooseTriggerMuon(const reco::Muon& muon){
+
+   std::cout << "inside LooseIdTriggerMuon loop !!!" << std::endl;
   // Requirements:
   // - no depencence on information not availabe in the muon object
   // - use only robust inputs
   bool tk_id = muon::isGoodMuon(muon, TMOneStationTight);
+ 
+ if ( not tk_id) {
+      std::cout << " its not a good muon !!!" << std::endl;
+    }
+
   if ( not tk_id ) return false;
   bool layer_requirements = muon.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
     muon.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0;

@@ -68,21 +68,44 @@ void MuonIDFilterProducerForHLT::produce(edm::StreamID, edm::Event& iEvent, cons
   
   edm::Handle<reco::MuonCollection> muons; 
   iEvent.getByToken(muonToken_, muons);
+
+  std::cout << "muon size in MuonIDFilterProducerForHLT = " << muons->size() << std::endl;
   
   for ( unsigned int i=0; i<muons->size(); ++i ){
     const reco::Muon& muon(muons->at(i));
+    std::cout << " inside muon size loop!! " << std::endl;
+
     if (applyTriggerIdLoose_ && muon::isLooseTriggerMuon(muon)) { 
+      
+      std::cout << " passing TriggerId and LooseTrigger muon cuts " << std::endl;
       output->push_back(muon);
     }
     else {  // Implement here manually all the required/desired cuts 
+           std::cout << " inside mask cuts loop!! " << std::endl;
+
+           if ( muon.innerTrack().isNull() ){
+          std::cout << " no muons with inner track muons are present!! " << std::endl;
+               }
+
+           if (muon.isTrackerMuon() ){
+              std::cout << " tracker muon found!! " << std::endl;
+               }
+
+
       if ( (muon.type() & allowedTypeMask_) == 0 )                  continue;
       if ( (muon.type() & requiredTypeMask_) != requiredTypeMask_ ) continue;
+
+        std::cout << " passing mask cuts!! " << std::endl;
       // tracker cuts
+
       if ( !muon.innerTrack().isNull() ){
+          std::cout << " inner track muons are present!! " << std::endl;
+
 	if (muon.innerTrack()->hitPattern().trackerLayersWithMeasurement() < min_NTrkLayers_) continue;
 	if (muon.innerTrack()->numberOfValidHits()<  min_NTrkHits_) continue;
 	if (muon.innerTrack()->hitPattern().pixelLayersWithMeasurement() < min_PixLayers_) continue;
 	if (muon.innerTrack()->hitPattern().numberOfValidPixelHits()<  min_PixHits_) continue;
+         std::cout << " passing tracker cuts!! " << std::endl;
       }
       // muon cuts
       if ( muon.numberOfMatchedStations()< min_NMuonStations_ )     continue;

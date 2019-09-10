@@ -132,6 +132,8 @@ HLTMuonL3PreFilter::fillDescriptions(edm::ConfigurationDescriptions& description
 // ------------ method called to produce the data  ------------
 bool HLTMuonL3PreFilter::hltFilter(Event& iEvent, const EventSetup& iSetup, trigger::TriggerFilterObjectWithRefs & filterproduct) const{
 
+
+   std::cout << " entering in filter " << std::endl;
    // All HLT filters must create and fill an HLT filter object,
    // recording any reconstructed physics objects satisfying (or not)
    // this HLT filter, and place it in the Event.
@@ -162,7 +164,9 @@ bool HLTMuonL3PreFilter::hltFilter(Event& iEvent, const EventSetup& iSetup, trig
    std::map<unsigned int, RecoChargedCandidateRef > MuonToL3s;
 
    // Test to see if we can use L3MuonTrajectorySeeds:
+   std::cout << " checking mu cand " << std::endl;
    if (mucands->empty()) return false;
+   std::cout << " no mu cand " << std::endl;
    auto const &tk = (*mucands)[0].track();
    bool useL3MTS=false;
 
@@ -174,6 +178,8 @@ bool HLTMuonL3PreFilter::hltFilter(Event& iEvent, const EventSetup& iSetup, trig
    // If we can use L3MuonTrajectory seeds run the older code:
    if (useL3MTS){
      LogDebug("HLTMuonL3PreFilter") << "HLTMuonL3PreFilter::hltFilter is in mode: useL3MTS";
+
+    std::cout << " hlt filter mode - useL3MTS " << std::endl;
 
      unsigned int maxI = mucands->size();
      for (unsigned int i=0;i!=maxI;++i){
@@ -188,7 +194,7 @@ bool HLTMuonL3PreFilter::hltFilter(Event& iEvent, const EventSetup& iSetup, trig
    // Using normal TrajectorySeeds:
    else{
      LogDebug("HLTMuonL3PreFilter") << "HLTMuonL3PreFilter::hltFilter is in mode: not useL3MTS";
- 
+      std::cout << " hlt filter mode - not useL3MTS " << std::endl;
      // Read Links collection:
      edm::Handle<reco::MuonTrackLinksCollection> links;
      iEvent.getByToken(linkToken_, links);
@@ -204,12 +210,15 @@ bool HLTMuonL3PreFilter::hltFilter(Event& iEvent, const EventSetup& iSetup, trig
      for(unsigned int i(0); i < mucands->size(); ++i){
 	RecoChargedCandidateRef cand(mucands,i);
         TrackRef tk = cand->track(); 
+        std::cout << " in mucand loop " << std::endl;
 	
 	if (!matchPreviousCand_){
 	    MuonToL3s[i] = RecoChargedCandidateRef(cand);
+          std::cout << " no match to previous cand " << std::endl;
 	}
 	else{
 	
+            std::cout << " match to previous cand " << std::endl;
 	    check_l1match = true;
             int nlink = 0;
 	    for(auto const & link : *links){
@@ -227,11 +236,20 @@ bool HLTMuonL3PreFilter::hltFilter(Event& iEvent, const EventSetup& iSetup, trig
                 const TrackRef staTrack = link.standAloneTrack();
                 L2toL3s[staTrack].push_back(RecoChargedCandidateRef(cand));
                 check_l1match = false;
+                
+               std::cout << " check_l1match = false " << std::endl;
+               
               }
             } //MTL loop
-         
+            
+              /////////////////////////////////////////////////
+             if ( l1CandTag_.label().empty()){
+                std::cout << "No L1CandTag found !! " << std::endl;
+                }
+             ///////////////////////////////////////////////////////
             
             if ( !l1CandTag_.label().empty() && check_l1match ){
+        
               iEvent.getByToken(l1CandToken_,level1Cands);
               level1Cands->getObjects(trigger::TriggerL1Mu,vl1cands);
               const unsigned int nL1Muons(vl1cands.size());

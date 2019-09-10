@@ -12,7 +12,8 @@ public:
 private:
       void produce(edm::Event&, const edm::EventSetup&) override;
 
-      typedef edm::ContainerMask<edmNew::DetSetVector<SiStripCluster> > StripMask;
+      //typedef edm::ContainerMask<edmNew::DetSetVector<SiStripCluster> > StripMask;
+      typedef edm::ContainerMask<edmNew::DetSetVector<Phase2TrackerCluster1D> > StripMask;
       typedef edm::ContainerMask<edmNew::DetSetVector<SiPixelCluster> > PixelMask;
       typedef edm::ContainerMask<edmNew::DetSetVector<Phase2TrackerCluster1D> > Phase2OTMask;
 

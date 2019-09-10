@@ -9,7 +9,8 @@
 #include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
 #include "DataFormats/SiPixelCluster/interface/SiPixelCluster.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiStripMatchedRecHit2D.h"
-
+//////////////////////////////////////////////////////////
+#include "DataFormats/Phase2TrackerCluster/interface/Phase2TrackerCluster1D.h"
 
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/Common/interface/DetSetVectorNew.h"
@@ -39,7 +40,8 @@ namespace {
     void produce(edm::StreamID, edm::Event& evt, const edm::EventSetup&) const override;
  
     using PixelMaskContainer    = edm::ContainerMask<edmNew::DetSetVector<SiPixelCluster>>;
-    using StripMaskContainer    = edm::ContainerMask<edmNew::DetSetVector<SiStripCluster>>;
+    //using StripMaskContainer    = edm::ContainerMask<edmNew::DetSetVector<SiStripCluster>>;
+    using StripMaskContainer    = edm::ContainerMask<edmNew::DetSetVector<Phase2TrackerCluster1D>>;
 
     using QualityMaskCollection = std::vector<unsigned char>;
 
@@ -52,7 +54,8 @@ namespace {
     edm::EDGetTokenT<QualityMaskCollection> srcQuals;
     
     edm::EDGetTokenT<edmNew::DetSetVector<SiPixelCluster> > pixelClusters_;
-    edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster> > stripClusters_;
+    //edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster> > stripClusters_;
+    edm::EDGetTokenT<edmNew::DetSetVector<Phase2TrackerCluster1D> > stripClusters_;
     
     edm::EDGetTokenT<PixelMaskContainer> oldPxlMaskToken_;
     edm::EDGetTokenT<StripMaskContainer> oldStrMaskToken_;
@@ -67,7 +70,7 @@ namespace {
     desc.add<edm::InputTag>("trajectories",edm::InputTag());
     desc.add<edm::InputTag>("trackClassifier",edm::InputTag("","QualityMasks"));
     desc.add<edm::InputTag>("pixelClusters",edm::InputTag("siPixelClusters"));
-    desc.add<edm::InputTag>("stripClusters",edm::InputTag("siStripClusters"));
+    desc.add<edm::InputTag>("stripClusters",edm::InputTag("siPhase2Clusters"));//////
     desc.add<edm::InputTag>("oldClusterRemovalInfo",edm::InputTag());
 
     desc.add<std::string>("TrackQuality","highPurity");
@@ -99,8 +102,10 @@ namespace {
     		 produces<edm::ContainerMask<edmNew::DetSetVector<SiPixelCluster> > >();
     }
     if ( !stripClusters.label().empty() ){
-		 stripClusters_ = consumes<edmNew::DetSetVector<SiStripCluster> >(stripClusters);
-    		 produces<edm::ContainerMask<edmNew::DetSetVector<SiStripCluster> > >();
+		 //stripClusters_ = consumes<edmNew::DetSetVector<SiStripCluster> >(stripClusters);
+		 //produces<edm::ContainerMask<edmNew::DetSetVector<SiStripCluster> > >();
+		 stripClusters_ = consumes<edmNew::DetSetVector<Phase2TrackerCluster1D> >(stripClusters);
+                 produces<edm::ContainerMask<edmNew::DetSetVector<Phase2TrackerCluster1D> > >();
     }
     // old mode
     auto const & overrideTrkQuals = iConfig.getParameter<edm::InputTag>("overrideTrkQuals");
@@ -127,7 +132,8 @@ namespace {
  
     edm::Handle<edmNew::DetSetVector<SiPixelCluster> > pixelClusters;
     if(!pixelClusters_.isUninitialized()) iEvent.getByToken(pixelClusters_, pixelClusters);
-    edm::Handle<edmNew::DetSetVector<SiStripCluster> > stripClusters;
+    //edm::Handle<edmNew::DetSetVector<SiStripCluster> > stripClusters;
+    edm::Handle<edmNew::DetSetVector<Phase2TrackerCluster1D> > stripClusters;
     if(!stripClusters_.isUninitialized()) iEvent.getByToken(stripClusters_, stripClusters);
 
 
@@ -215,7 +221,8 @@ namespace {
     // std::cout << " => collectedStrips: " << collectedStrips.size() << std::endl;
     if(!stripClusters_.isUninitialized()){ 
     	auto removedStripClusterMask =
-      		std::make_unique<StripMaskContainer>(edm::RefProd<edmNew::DetSetVector<SiStripCluster>>(stripClusters),collectedStrips);
+      		//std::make_unique<StripMaskContainer>(edm::RefProd<edmNew::DetSetVector<SiStripCluster>>(stripClusters),collectedStrips);
+                std::make_unique<StripMaskContainer>(edm::RefProd<edmNew::DetSetVector<Phase2TrackerCluster1D>>(stripClusters),collectedStrips);
       LogDebug("TrackClusterRemover")<<"total strip to skip: "<<std::count(collectedStrips.begin(),collectedStrips.end(),true);
       // std::cout << "TrackClusterRemover " <<"total strip to skip: "<<std::count(collectedStrips.begin(),collectedStrips.end(),true) <<std::endl;
       iEvent.put(std::move(removedStripClusterMask));

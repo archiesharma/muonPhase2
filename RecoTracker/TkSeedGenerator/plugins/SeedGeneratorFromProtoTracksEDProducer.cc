@@ -79,6 +79,9 @@ SeedGeneratorFromProtoTracksEDProducer::SeedGeneratorFromProtoTracksEDProducer(c
 
 void SeedGeneratorFromProtoTracksEDProducer::produce(edm::Event& ev, const edm::EventSetup& es)
 {
+
+  std::cout<< " in the main loop " << std::endl;
+
   auto result = std::make_unique<TrajectorySeedCollection>();
   Handle<reco::TrackCollection> trks;
   ev.getByToken(theInputCollectionTag, trks);
@@ -93,15 +96,21 @@ void SeedGeneratorFromProtoTracksEDProducer::produce(edm::Event& ev, const edm::
   /// need optimization: all es stuff should go out of the loop
   /// 
   for (TrackCollection::const_iterator it=protos.begin(); it!= protos.end(); ++it) {
+
+    std::cout<< " in the TrackCollection loop " << std::endl;
     const Track & proto = (*it);
     GlobalPoint vtx(proto.vertex().x(), proto.vertex().y(), proto.vertex().z());
 
     // check the compatibility with a primary vertex
     bool keepTrack = false;
-    if ( (!foundVertices) || vertices->empty() ) { 
+    if ( (!foundVertices) || vertices->empty() ) {
+      std::cout<< " check vertices loop " << std::endl; 
       if (useEventsWithNoVertex) keepTrack = true;
+      std::cout<< " end of check vertices loop " << std::endl;
     } 
     else if (usePV_){
+       
+      std::cout<< " use PV loop " << std::endl;
  
       GlobalPoint aPV(vertices->begin()->position().x(),vertices->begin()->position().y(),vertices->begin()->position().z());
       double distR2 = sqr(vtx.x()-aPV.x()) +sqr(vtx.y()-aPV.y());
@@ -109,45 +118,62 @@ void SeedGeneratorFromProtoTracksEDProducer::produce(edm::Event& ev, const edm::
       if ( distR2 < sqr(originRadius) && distZ < originHalfLength ) {
         keepTrack = true;
       }
+      std::cout<< " end of use PV loop " << std::endl;
     }
     else { 
       for (reco::VertexCollection::const_iterator iv=vertices->begin(); iv!= vertices->end(); ++iv) {
+        std::cout<< " reco vertex collection loop " << std::endl;
         GlobalPoint aPV(iv->position().x(),iv->position().y(),iv->position().z());
 	double distR2 = sqr(vtx.x()-aPV.x()) +sqr(vtx.y()-aPV.y());
 	double distZ = fabs(vtx.z()-aPV.z());
 	if ( distR2 < sqr(originRadius) && distZ < originHalfLength ) { 
 	  keepTrack = true;
 	  break;
+          std::cout<< " code breaks " << std::endl;
         }
       }
     }
+     std::cout<< " track found !! " << std::endl;
     if (!keepTrack) continue;
 
     if ( useProtoTrackKinematics ) {
+      std::cout<< " useProtoTrackKinematics loop " << std::endl;
       SeedFromProtoTrack seedFromProtoTrack( proto, es);
       if (seedFromProtoTrack.isValid()) (*result).push_back( seedFromProtoTrack.trajectorySeed() );
+      std::cout<< " seedFromProtoTrack.isValid() loop " << std::endl; 
     } else {
+       std::cout<< " seedFromProtoTrack.is NOT Valid() loop " << std::endl;
       edm::ESHandle<TransientTrackingRecHitBuilder> ttrhbESH;
       es.get<TransientRecHitRecord>().get(builderName,ttrhbESH);
       std::vector<Hit> hits;
       for (unsigned int iHit = 0, nHits = proto.recHitsSize(); iHit < nHits; ++iHit) {
+
+        std::cout<< " inside recHit loop " << std::endl; 
         TrackingRecHitRef refHit = proto.recHit(iHit);
         if(refHit->isValid()) hits.push_back((Hit)&(*refHit));
+          
       }
       sort(hits.begin(), hits.end(), HitLessByRadius());
 
       if (hits.size() > 1) {
+        std::cout<< " hits.size() > 1 loop " << std::endl;
         double mom_perp = sqrt(proto.momentum().x()*proto.momentum().x()+proto.momentum().y()*proto.momentum().y());
+        std::cout<< " hits.size() > 1 loop 1" << std::endl;
 	GlobalTrackingRegion region(mom_perp, vtx, 0.2, 0.2);
-
+        std::cout<< " hits.size() > 1 loop 2" << std::endl;
 	edm::ParameterSet seedCreatorPSet = theConfig.getParameter<edm::ParameterSet>("SeedCreatorPSet");
+        std::cout<< " hits.size() > 1 loop 3" << std::endl;
 	SeedFromConsecutiveHitsCreator seedCreator(seedCreatorPSet);
+        std::cout<< " hits.size() > 1 loop 4" << std::endl;
 	seedCreator.init(region, es, nullptr);
+        std::cout<< " hits.size() > 1 loop 5" << std::endl;  
 	seedCreator.makeSeed(*result, SeedingHitSet(hits[0], hits[1], hits.size() >2 ? hits[2] : SeedingHitSet::nullPtr() ));
+        std::cout<< " hits.size() > 1 loop 6" << std::endl;
       }
     }
   } 
 
   ev.put(std::move(result));
+  std::cout<< " end of TrackCollection loop " << std::endl;
 }
 

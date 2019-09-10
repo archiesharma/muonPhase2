@@ -53,14 +53,22 @@ void L3MuonCandidateProducerFromMuons::produce(StreamID, Event& event, const Eve
 
   // Take the L3 container
   LogTrace(category)<<" Taking the L3/GLB muons: "<<m_L3CollectionLabel.label();
+  
+  std::cout << " entering L3MuonProducer !! " << std::endl;
+
   Handle<reco::MuonCollection> muons;
   event.getByToken(muonToken_,muons);
 
+  std::cout << " size of L3/GLB muons = " << muons->size() << std::endl;
+
   if (not muons.isValid()) {
+    std::cout << " L2/GKB muons not found !!" << std::endl;
     LogError(category) << muons.whyFailed()->what();
   } else { 
     for (unsigned int i=0; i<muons->size(); i++) {
       
+     std::cout << " L2/GKB muons found !!" << std::endl;
+
       // avoids crashing in case the muon is SA only. 
       TrackRef tkref = ((*muons)[i].innerTrack().isNonnull())? (*muons)[i].innerTrack() : (*muons)[i].muonBestTrack();
       
